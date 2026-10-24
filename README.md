@@ -1,7 +1,12 @@
 # umea-energi-api-client
 
-Async-capable Python client for the Umeå Energi API, generated from its
+Unofficial, async-capable Python client for the Umeå Energi API, generated from its
 [OpenAPI document](https://tapi.umeaenergi.se/swagger/v2/swagger.json).
+See the [API documentation](https://tapi.umeaenergi.se/) for endpoint details.
+
+> **Disclaimer:** This is an independent project. The author has no affiliation with
+> Umeå Energi, which neither endorses nor supports this library. The library is in alpha:
+> its API may change between releases.
 
 ## Usage
 
@@ -31,3 +36,7 @@ mise run fetch-spec  # update openapi/swagger.json from the API
 ```
 
 Run `mise tasks` to list all available tasks.
+
+## License
+
+[MIT](https://github.com/klingenm/umea-energi-api-client/blob/main/LICENSE). Provided "as is", without warranty of any kind.
