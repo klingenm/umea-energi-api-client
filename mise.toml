@@ -1,0 +1,43 @@
+min_version = "2026.9.0"
+
+[tools]
+python = "3.14"
+uv = "0.13"
+ruff = "0.17"
+
+[env]
+# Make uv use the mise-managed interpreter instead of downloading its own.
+UV_PYTHON_PREFERENCE = "only-system"
+UV_PYTHON_DOWNLOADS = "never"
+
+[settings]
+# Activate the uv-managed .venv whenever mise is active in this directory.
+python.uv_venv_auto = true
+
+[tasks.sync]
+description = "Install the project and dev dependencies into .venv"
+run = "uv sync --all-groups"
+
+[tasks.format]
+description = "Format code and apply safe lint fixes"
+run = ["ruff format", "ruff check --fix"]
+
+[tasks.lint]
+description = "Check formatting and lint"
+run = ["ruff format --check", "ruff check"]
+
+[tasks.typecheck]
+description = "Type-check with mypy"
+run = "uv run mypy"
+
+[tasks.test]
+description = "Run the test suite"
+run = "uv run pytest"
+
+[tasks.check]
+description = "Run lint, typecheck and tests"
+depends = ["lint", "typecheck", "test"]
+
+[tasks.build]
+description = "Build sdist and wheel into dist/"
+run = "uv build"
