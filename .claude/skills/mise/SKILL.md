@@ -33,6 +33,8 @@ mise run sync             # uv sync --all-groups
 mise run build            # uv build
 mise run fetch-spec       # download the latest OpenAPI document
 mise run generate         # regenerate the API client (mise run --force generate to bypass the up-to-date check)
+mise run change           # add a knope change file to .changeset/
+mise run release          # release pending changes (pushes + publishes; only when asked)
 ```
 
 When adding a task, define it under `[tasks.<name>]` in `mise.toml` with a `description`

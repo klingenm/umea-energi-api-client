@@ -11,8 +11,9 @@ Python library providing a client for the Umeå Energi API.
 - `openapi/swagger.json` — upstream OpenAPI document, kept verbatim (refresh with `mise run fetch-spec`)
 - `scripts/normalize_openapi.py` — patches known upstream spec gaps before generation
 - `tests/` — pytest tests
+- `.changeset/` — pending change files; `knope.toml` — release config; `CHANGELOG.md` — written by knope
 - `pyproject.toml` — package metadata, dependencies, and ruff/ty/pytest config (build backend: `uv_build`)
-- `mise.toml` — pinned tool versions (python, uv, ruff, openapi-python-client), env, and project tasks
+- `mise.toml` — pinned tool versions (python, uv, ruff, openapi-python-client, knope), env, and project tasks
 
 ## Tooling
 
@@ -31,6 +32,29 @@ mise run test -- -k <name>
 mise run fetch-spec # download the latest OpenAPI document
 mise run generate   # regenerate the client (skips if inputs unchanged; `mise run --force generate`)
 ```
+
+## Releases
+
+Versioning uses [knope](https://knope.tech) change files (like JS changesets); commit messages don't affect versions.
+
+- Every user-facing change adds a change file in `.changeset/` in the same commit. `mise run change` creates one
+  interactively; or write it directly:
+
+  ```markdown
+  ---
+  default: minor
+  ---
+
+  # Short summary (becomes the changelog heading)
+
+  Optional details.
+  ```
+
+  Use `major` / `minor` / `patch`. While on 0.x, knope bumps one level lower (`major` → 0.x+1.0, `minor` → patch).
+- Don't edit the version in `pyproject.toml` or `CHANGELOG.md` by hand.
+- `mise run release` (from a clean, pushed `main`) bumps the version, updates `CHANGELOG.md` and `uv.lock`, commits,
+  pushes and creates the GitHub release, which triggers `.github/workflows/publish.yml` → PyPI. Only run it when the
+  user asks; preview with `mise run release -- --dry-run`.
 
 ## Generated client
 

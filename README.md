@@ -33,7 +33,14 @@ mise run sync        # create .venv and install dependencies
 mise run generate    # generate the API client (gitignored; needed before imports work)
 mise run check       # lint, typecheck, test
 mise run fetch-spec  # update openapi/swagger.json from the API
+mise run change      # describe a change for the next release
 ```
+
+### Releasing
+
+Changes are tracked with [knope](https://knope.tech) change files in `.changeset/`.
+`mise run release` bumps the version, updates the changelog, pushes, and creates a GitHub
+release, which publishes the package to PyPI.
 
 Run `mise tasks` to list all available tasks.
 
