@@ -9,6 +9,8 @@ ruff = "0.17"
 # Make uv use the mise-managed interpreter instead of downloading its own.
 UV_PYTHON_PREFERENCE = "only-system"
 UV_PYTHON_DOWNLOADS = "never"
+# `uv check` (ty type checking) is a preview feature.
+UV_PREVIEW_FEATURES = "check-command"
 
 [settings]
 # Activate the uv-managed .venv whenever mise is active in this directory.
@@ -27,8 +29,8 @@ description = "Check formatting and lint"
 run = ["ruff format --check", "ruff check"]
 
 [tasks.typecheck]
-description = "Type-check with mypy"
-run = "uv run mypy"
+description = "Type-check with ty (via uv check)"
+run = "uv check --ty-version 0.0.91"
 
 [tasks.test]
 description = "Run the test suite"

@@ -6,7 +6,7 @@ Python library providing a client for the Umeå Energi API.
 
 - `src/umea_energi_api_client/` — the package (src layout, ships `py.typed`)
 - `tests/` — pytest tests
-- `pyproject.toml` — package metadata, dependencies, and ruff/mypy/pytest config (build backend: `uv_build`)
+- `pyproject.toml` — package metadata, dependencies, and ruff/ty/pytest config (build backend: `uv_build`)
 - `mise.toml` — pinned tool versions (python, uv, ruff), env, and project tasks
 
 ## Tooling
@@ -28,7 +28,8 @@ mise run test -- -k <name>
 ## Conventions
 
 - Python 3.14+. Use modern syntax (`X | None`, built-in generics, `match` where it helps).
-- mypy runs in strict mode: annotate every public function, including tests.
+- Type checking is ty via `uv check` (pinned in the `typecheck` task); warnings fail the check.
+  Annotate every function, including tests.
 - Ruff line length is 100.
 - Keep tests alongside the behavior they verify. Don't hit the real API in tests; mock HTTP.
 - Commit messages follow `type(scope): summary`.

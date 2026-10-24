@@ -25,7 +25,7 @@ Configuration lives in `mise.toml` at the repository root.
 mise tasks                # list tasks with descriptions
 mise run format           # ruff format + ruff check --fix
 mise run lint             # ruff format --check + ruff check
-mise run typecheck        # mypy (strict)
+mise run typecheck        # ty, via uv check
 mise run test             # pytest
 mise run test -- -k name  # pass extra args through to the task
 mise run check            # lint + typecheck + test (run before committing)
