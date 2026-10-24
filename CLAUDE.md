@@ -5,9 +5,14 @@ Python library providing a client for the Umeå Energi API.
 ## Layout
 
 - `src/umea_energi_api_client/` — the package (src layout, ships `py.typed`)
+- `src/umea_energi_api_client/generated/` — API client generated from the OpenAPI document. Gitignored, and
+  regenerated automatically by the `typecheck`, `test` and `build` tasks. **Never edit by hand**; change
+  `openapi/config.yaml` or `scripts/normalize_openapi.py` and run `mise run --force generate`.
+- `openapi/swagger.json` — upstream OpenAPI document, kept verbatim (refresh with `mise run fetch-spec`)
+- `scripts/normalize_openapi.py` — patches known upstream spec gaps before generation
 - `tests/` — pytest tests
 - `pyproject.toml` — package metadata, dependencies, and ruff/ty/pytest config (build backend: `uv_build`)
-- `mise.toml` — pinned tool versions (python, uv, ruff), env, and project tasks
+- `mise.toml` — pinned tool versions (python, uv, ruff, openapi-python-client), env, and project tasks
 
 ## Tooling
 
@@ -23,7 +28,15 @@ mise run sync       # install deps into .venv
 mise run format     # format + autofix lint
 mise run check      # lint + typecheck + test — run before every commit
 mise run test -- -k <name>
+mise run fetch-spec # download the latest OpenAPI document
+mise run generate   # regenerate the client (skips if inputs unchanged; `mise run --force generate`)
 ```
+
+## Generated client
+
+Built with openapi-python-client (httpx + attrs). Every endpoint module exposes `sync`, `sync_detailed`,
+`asyncio`, and `asyncio_detailed`. Endpoints live under `generated/api/<tag>/`, models under `generated/models/`.
+The generated code is formatted with ruff but excluded from linting; ty still type-checks it.
 
 ## Conventions
 

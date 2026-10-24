@@ -1,0 +1,11 @@
+# openapi-python-client configuration, used by `mise run generate`.
+# Reference: https://github.com/openapi-generators/openapi-python-client#configuration
+
+# The API also advertises these JSON variants; treat them as plain JSON.
+content_type_overrides:
+  text/json: application/json
+  application/*+json: application/json
+  application/json-patch+json: application/json
+
+post_hooks:
+  - ruff format .

@@ -4,6 +4,7 @@ min_version = "2026.9.0"
 python = "3.14"
 uv = "0.13"
 ruff = "0.17"
+"pipx:openapi-python-client" = "0.29"
 
 [env]
 # Make uv use the mise-managed interpreter instead of downloading its own.
@@ -29,10 +30,12 @@ description = "Check formatting and lint"
 run = ["ruff format --check", "ruff check"]
 
 [tasks.typecheck]
+depends = ["generate"]
 description = "Type-check with ty (via uv check)"
 run = "uv check --ty-version 0.0.91"
 
 [tasks.test]
+depends = ["generate"]
 description = "Run the test suite"
 run = "uv run pytest"
 
@@ -40,6 +43,25 @@ run = "uv run pytest"
 description = "Run lint, typecheck and tests"
 depends = ["lint", "typecheck", "test"]
 
+[tasks.fetch-spec]
+description = "Download the latest OpenAPI document to openapi/swagger.json"
+run = "curl -fsSL https://tapi.umeaenergi.se/swagger/v2/swagger.json -o openapi/swagger.json"
+
+[tasks.generate]
+description = "Regenerate the API client from openapi/swagger.json"
+sources = ["openapi/swagger.json", "openapi/config.yaml", "scripts/normalize_openapi.py"]
+outputs = ["src/umea_energi_api_client/generated/__init__.py"]
+run = """
+python -I scripts/normalize_openapi.py openapi/swagger.json build/openapi.normalized.json
+openapi-python-client generate \
+  --path build/openapi.normalized.json \
+  --config openapi/config.yaml \
+  --meta none \
+  --output-path src/umea_energi_api_client/generated \
+  --overwrite
+"""
+
 [tasks.build]
+depends = ["generate"]
 description = "Build sdist and wheel into dist/"
 run = "uv build"

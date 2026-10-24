@@ -31,10 +31,13 @@ mise run test -- -k name  # pass extra args through to the task
 mise run check            # lint + typecheck + test (run before committing)
 mise run sync             # uv sync --all-groups
 mise run build            # uv build
+mise run fetch-spec       # download the latest OpenAPI document
+mise run generate         # regenerate the API client (mise run --force generate to bypass the up-to-date check)
 ```
 
 When adding a task, define it under `[tasks.<name>]` in `mise.toml` with a `description`
-and a `run` string or list; use `depends` to compose tasks.
+and a `run` string or list; use `depends` to compose tasks. Flags for mise itself (e.g. `--force`)
+go *before* the task name; anything after it is passed to the task's command.
 
 ## Managing tools
 

@@ -23,3 +23,6 @@ htmlcov/
 
 # Claude Code local overrides
 .claude/settings.local.json
+
+# Generated API client (mise run generate)
+src/umea_energi_api_client/generated/
