@@ -14,6 +14,7 @@ Python library providing a client for the Umeå Energi API.
 - `.changeset/` — pending change files; `knope.toml` — release config; `CHANGELOG.md` — written by knope
 - `pyproject.toml` — package metadata, dependencies, and ruff/ty/pytest config (build backend: `uv_build`)
 - `mise.toml` — pinned tool versions (python, uv, ruff, openapi-python-client, knope), env, and project tasks
+- `mise.lock`, `.mise/locks/` — exact tool versions and checksums (`mise lock`; never edit by hand)
 
 ## Tooling
 

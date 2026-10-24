@@ -18,6 +18,11 @@ Configuration lives in `mise.toml` at the repository root.
   download its own. Don't override `UV_PYTHON*` variables or add a `.python-version` file.
 - Prefer `mise run <task>` over retyping the underlying commands, so local runs match CI.
 - Use `mise.local.toml` (gitignored) for personal overrides; don't put them in `mise.toml`.
+- Exact tool versions, download URLs and checksums are pinned in `mise.lock` (linux-x64 for CI,
+  macos-arm64 for local). pipx tools also lock their Python dependencies under `.mise/locks/`.
+  After any `mise use`, `mise unuse` or `mise upgrade`, run `mise lock` and commit `mise.lock`
+  and `.mise/locks/` together with `mise.toml`. CI installs with `MISE_LOCKED=1` and fails on a
+  stale lockfile.
 
 ## Running tasks
 
@@ -52,11 +57,13 @@ mise ls-remote <tool>        # list available versions
 mise latest <tool>           # latest available version
 mise outdated                # pinned tools with newer versions
 mise upgrade --bump          # upgrade and rewrite pins in mise.toml
+mise lock                    # refresh mise.lock after changing tools
+mise lock --bump             # move locked versions to the newest matching the mise.toml prefixes
 mise exec -- <cmd>           # run a command with mise's tools on PATH (when not activated)
 ```
 
-Pins in this repo use a major.minor prefix (e.g. `python = "3.14"`), so patch releases are
-picked up by `mise install`/`mise upgrade` without editing `mise.toml`.
+Pins in `mise.toml` use a major.minor prefix (e.g. `python = "3.14"`); `mise.lock` fixes the exact
+patch version. Use `mise lock --bump` to take newer patch releases without editing `mise.toml`.
 
 ## Troubleshooting
 
@@ -65,4 +72,5 @@ picked up by `mise install`/`mise upgrade` without editing `mise.toml`.
   shell isn't activated, prefix the command with `mise exec --`.
 - `.venv` built against the wrong interpreter: `rm -rf .venv && mise run sync`, then confirm
   `home` in `.venv/pyvenv.cfg` points into `~/.local/share/mise/installs/python/`.
+- `... is not in the lockfile` (CI or `MISE_LOCKED=1`): run `mise lock` and commit the result.
 - `mise doctor` reports activation and config problems.
