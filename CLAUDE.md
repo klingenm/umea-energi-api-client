@@ -7,6 +7,11 @@ uv workspace with an unofficial Python client for the Umeå Energi API and a loc
 - `pyproject.toml` — workspace root (virtual, no package): member list, dev dependency group, and the shared
   ruff/ty/pytest config for all packages
 - `packages/api-client/` — `umea-energi-api-client`, published to PyPI (src layout, ships `py.typed`)
+  - `src/umea_energi_api_client/client.py` — `UmeaEnergiClient`: login flows, refresh, revoke, and every
+    workaround for where the real API differs from the OpenAPI document (listed in its module docstring).
+    Put new workarounds here, not in the playground.
+  - `credentials.py` (`Credentials`, `Login`, `User`, `jwt_expiry`), `errors.py`, `http_logging.py` (DEBUG
+    traffic log with redaction), `testing.py` (`FakeApi`, a public httpx `MockTransport` test double)
   - `src/umea_energi_api_client/generated/` — client generated from the OpenAPI document. Gitignored, and
     regenerated automatically by the `typecheck`, `test`, `build` and `playground` tasks. **Never edit by hand**;
     change `openapi/config.yaml` or `scripts/normalize_openapi.py` and run `mise run --force generate`.
@@ -18,9 +23,9 @@ uv workspace with an unofficial Python client for the Umeå Energi API and a loc
   - `src/umea_energi_playground/models.py` — database models
   - `src/umea_energi_playground/migrations/` — Alembic env and versions (config in the package's `pyproject.toml`
     under `[tool.alembic]`; there is no `alembic.ini`, so pass `-c pyproject.toml` to the alembic CLI)
-  - `src/umea_energi_playground/api.py` — BankID/email login flows on top of the generated client
+  - `src/umea_energi_playground/tokens.py` — `TokenManager`: refresh and logout of stored tokens, with
+    per-token locks; uses the library's `UmeaEnergiClient`
   - `src/umea_energi_playground/examples.py` — the sample API calls the UI can run
-  - `tests/fake_api.py` — `FakeApi`, an httpx `MockTransport` stand-in for the Umeå Energi API
 - `.changeset/` — pending change files; `knope.toml` — release config
 - `mise.toml` — pinned tool versions (python, uv, ruff, openapi-python-client, knope), env, and tasks
 - `mise.lock`, `.mise/locks/` — exact tool versions and checksums (`mise lock`; never edit by hand)
@@ -48,19 +53,51 @@ mise run playground:revision -- -m "describe change"  # autogenerate a migration
 
 ## Playground
 
-- Local use only: it stores real access tokens unencrypted in `packages/playground/playground.db` (gitignored).
-  Don't log or print tokens.
+- Local use only: it stores real access and refresh tokens unencrypted in `packages/playground/playground.db`
+  (gitignored). Don't log or print tokens.
 - The app applies migrations on startup (`db.upgrade_database`). Every model change needs a migration:
   run `mise run playground:revision -- -m "..."`, review the generated file, and keep `render_as_batch` (SQLite).
-  `tests/test_tokens.py::test_migrations_match_models` fails if models and migrations drift.
+  `mise run playground` reloads on model changes before the migration exists; run `mise run playground:migrate`
+  afterwards. `tests/test_tokens.py::test_migrations_match_models` fails if models and migrations drift.
 - Timestamps are timezone-aware UTC (`db.UTCDateTime`); never store naive datetimes.
-- BankID: `POST /Session/bankid` returns a reference; the browser polls `/login/bankid/{ref}/status` every second
-  (the QR code is a base64 SVG that changes each second) until a poll returns a token. `completed` on the start
-  response does not mean the user logged in.
-- Email: `emailStep1` (username + password) makes the API email a one-time code; `emailStep2` (username + code)
-  returns the token.
-- `LoginManagerState` (0/1) is undocumented upstream; the UI lets the user pick it and defaults to 0.
-- Tests use `FakeApi` and a temporary SQLite file; never call the real API from tests.
+- Login, refresh and logout all go through the library's `UmeaEnergiClient`; the playground only stores tokens
+  (`AuthToken.apply(credentials)`) and serializes refresh/logout per token (`TokenManager`), because a refresh
+  can rotate the refresh token. Examples refresh first and retry once on 401.
+- Logout revokes the refresh token (needs a valid access token, so it refreshes first), then deletes the row;
+  if revoking fails the row is kept and the user can retry or "forget locally" (`/tokens/{id}/delete`).
+- Logging: `logs.configure_logging` sends `umea_energi_playground` (`PLAYGROUND_LOG_LEVEL`, INFO) and the
+  library's traffic log (`PLAYGROUND_API_LOG_LEVEL`, DEBUG) to stderr; `mise run playground` output can be
+  tee'd to `packages/playground/playground.log` (gitignored).
+- Tests use `umea_energi_api_client.testing.FakeApi` and a temporary SQLite file; never call the real API.
+
+## API facts (verified against production)
+
+- `https://api.umeaenergi.se` is production; `https://tapi.umeaenergi.se` is a test environment (it serves the
+  OpenAPI document; real accounts and BankID don't work there). Mina sidor (minasidor.umeaenergi.se) uses
+  API version 1 for everything.
+- `LoginManagerState` is the customer type (`CustomerType`): 0 = private person, 1 = company.
+- `emailStep1` answers 404 for wrong credentials (the route exists; a wrong method gives 405).
+- Logins return `token.access_token` (not `accessJwtToken`); the access token lives ~10 minutes. The refresh
+  token (~1 year) comes as a `refreshToken` cookie and in `user.refreshToken.token`. `session/refresh-token`
+  takes only the cookie; `session/revoke-token` takes the bearer token and the cookie.
+- BankID: the start response's `completed` only means the order exists; a poll is done when it has a token.
+  The QR code is a base64 SVG that changes every second.
+- `user.defaultCustomerCode` is often null; the customer code is then `user.customer.code`.
+- `GET /Contracts/{customerCode}` returns `{pager, groupedContracts: [{group, contracts}]}` (the document says one
+  `ContractResponse`); `contractType` is a string (`ELECTRICITY`, `ELECTRICITY_GRID`, `DISTRICT_HEATING`,
+  `DISTRICT_COOLING`, `BROADBAND`, `SOLAR_CELL`), not the document's integer enum.
+- Consumption endpoint by contract type (as Mina sidor does): electricity → `electricityConsumption/{type}`,
+  district heating → `heatingConsumption`, others → `consumption`; cost of `ELECTRICITY_GRID` is asked for as
+  `ELECTRICITY`. Resolutions: `YEAR`, `MONTH`, `DAY`, `HOUR`, `QUARTER`. Query names are case-insensitive.
+- Meter readings: the "delivery site code" these endpoints take is the contract's meter point. Electricity grid
+  readings come from `delsiteMeterReadings` (`{values: [{timeStamp, reason, value}]}`); other types from
+  `meterReadings` with `ShowEstimatedValuesStatus=true`. `maxConsumption` is documented with `FromDate`/`ToDate`
+  but Mina sidor sends `from`/`to`; the client sends both. It only has data for company customers (Mina sidor shows
+  it for district heating when the customer is a company); private customers get `[]` for any range.
+- Generated response parsers can raise on real data (e.g. `"2026-10"` in a date-time field). Where that happens,
+  build the request with the endpoint's `_get_kwargs` and send it without parsing (`UmeaEnergiClient._get_json`).
+- Never log secrets: `http_logging.REDACTED_KEYS` plus any key containing "token" are redacted, and JWTs are
+  scrubbed from any body. Add new secret-bearing keys there.
 
 ## Releases
 
