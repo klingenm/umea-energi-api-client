@@ -8,6 +8,7 @@ Unofficial Python tooling for the [Umeå Energi API](https://tapi.umeaenergi.se/
 | Package | Description |
 | --- | --- |
 | [`packages/api-client`](packages/api-client) | [`umea-energi-api-client`](https://pypi.org/project/umea-energi-api-client/): async-capable client generated from the API's OpenAPI document. Published to PyPI. |
+| [`packages/playground`](packages/playground) | Local web app for trying the client: log in with BankID or email, store the token, and call the API with it. |
 
 ## Development
 
@@ -18,10 +19,11 @@ Tool versions (Python, uv, ruff, openapi-python-client, knope) are pinned with [
 mise install         # install pinned tools
 mise run sync        # create .venv with all packages and dev dependencies
 mise run check       # lint, typecheck and test everything
+mise run playground  # run the playground on http://127.0.0.1:8000
 ```
 
 The API client is generated into `packages/api-client/src/umea_energi_api_client/generated/`
-(gitignored). The `check` and `build` tasks generate it as needed; run
+(gitignored). The `check`, `build` and `playground` tasks generate it as needed; run
 `mise run generate` once after cloning so imports work in your editor. `mise run fetch-spec`
 updates the OpenAPI document.
 

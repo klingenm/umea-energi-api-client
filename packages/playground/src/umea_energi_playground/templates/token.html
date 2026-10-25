@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ token.display_name }}{% endblock %}
+{% block content %}
+<h1>{{ token.display_name }}</h1>
+<div class="card">
+  <dl>
+    <dt>Login method</dt><dd>{{ token.method.value }}</dd>
+    <dt>Email</dt><dd>{{ token.email or "—" }}</dd>
+    <dt>API user id</dt><dd>{{ token.api_user_id or "—" }}</dd>
+    <dt>Customer code</dt><dd>{{ token.customer_code or "—" }}</dd>
+    <dt>Expires</dt>
+    <dd>
+      {% if token.expires_at %}{{ token.expires_at.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}unknown{% endif %}
+      {% if token.is_expired() %}<span class="badge expired">expired</span>{% endif %}
+    </dd>
+    <dt>Stored</dt><dd>{{ token.created_at.strftime("%Y-%m-%d %H:%M") }} UTC</dd>
+  </dl>
+</div>
+
+<h2>Try the API with this token</h2>
+{% for example in examples %}
+<div class="card row">
+  <div class="grow">
+    <strong>{{ example.title }}</strong>
+    {% if not example.requires_login %}<span class="badge">public</span>{% endif %}
+    <div class="muted">{{ example.description }}</div>
+  </div>
+  <a class="button secondary" href="{{ url_for('run_example', slug=example.slug).include_query_params(token_id=token.id) }}">Run</a>
+</div>
+{% endfor %}
+
+<form method="post" action="{{ url_for('delete_token', token_id=token.id) }}" style="margin-top: 2rem">
+  <button class="danger" type="submit">Delete this token</button>
+</form>
+{% endblock %}

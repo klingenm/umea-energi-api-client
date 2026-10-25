@@ -1,0 +1,8 @@
+<label>
+  <span>Login type (<code>LoginManagerState</code>, undocumented; the API's own example uses 0)</span>
+  <select name="state">
+    {% for option in login_states %}
+    <option value="{{ option.value }}" {% if option.value == (state or 0) %}selected{% endif %}>{{ option.value }}</option>
+    {% endfor %}
+  </select>
+</label>

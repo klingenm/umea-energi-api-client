@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Playground{% endblock %} · Umeå Energi API</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f5; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6b66;
+      --border: #deded8; --accent: #0b6e4f; --accent-text: #ffffff; --danger: #b42318;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161615; --surface: #1f1f1d; --text: #ececea; --muted: #a3a39d;
+        --border: #34342f; --accent: #3fb68b; --accent-text: #0d1f18; --danger: #f97066;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+           font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    header, main { max-width: 52rem; margin: 0 auto; padding: 1rem; }
+    header { display: flex; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--border); }
+    header a { color: inherit; text-decoration: none; font-weight: 600; }
+    header span { color: var(--muted); font-size: .875rem; }
+    h1 { font-size: 1.5rem; margin: 1.5rem 0 1rem; }
+    h2 { font-size: 1.125rem; margin: 2rem 0 .75rem; }
+    a { color: var(--accent); }
+    .muted { color: var(--muted); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: .5rem; padding: 1rem; margin-bottom: .75rem; }
+    .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    .grow { flex: 1 1 auto; }
+    form { margin: 0; }
+    label { display: block; margin-bottom: .75rem; }
+    label > span { display: block; font-size: .875rem; color: var(--muted); margin-bottom: .25rem; }
+    input, select { width: 100%; max-width: 24rem; padding: .5rem; font: inherit; color: inherit;
+                    background: var(--bg); border: 1px solid var(--border); border-radius: .375rem; }
+    button, .button { display: inline-block; padding: .5rem .875rem; font: inherit; cursor: pointer;
+                      border-radius: .375rem; border: 1px solid var(--accent); text-decoration: none;
+                      background: var(--accent); color: var(--accent-text); }
+    button.secondary, .button.secondary { background: transparent; color: var(--accent); }
+    button.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+    .error { color: var(--danger); }
+    .badge { font-size: .75rem; padding: .125rem .5rem; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .badge.expired { color: var(--danger); border-color: var(--danger); }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; }
+    dt { color: var(--muted); }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    pre { background: var(--surface); border: 1px solid var(--border); border-radius: .5rem;
+          padding: 1rem; overflow-x: auto; font-size: .8125rem; }
+    .qr { width: 14rem; height: 14rem; background: #fff; padding: .5rem; border-radius: .5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{{ url_for('index') }}">Umeå Energi API playground</a>
+    <span>Unofficial · local use only</span>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

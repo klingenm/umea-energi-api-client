@@ -40,6 +40,9 @@ mise run fetch-spec       # download the latest OpenAPI document
 mise run generate         # regenerate the API client (mise run --force generate to bypass the up-to-date check)
 mise run change           # add a knope change file to .changeset/
 mise run release          # release pending changes (pushes + publishes; only when asked)
+mise run playground       # run the playground app on http://127.0.0.1:8000
+mise run playground:migrate   # apply playground migrations
+mise run playground:revision -- -m "..."   # autogenerate a playground migration
 ```
 
 When adding a task, define it under `[tasks.<name>]` in `mise.toml` with a `description`
@@ -72,7 +75,7 @@ patch version. Use `mise lock --bump` to take newer patch releases without editi
   shell isn't activated, prefix the command with `mise exec --`.
 - `.venv` built against the wrong interpreter: `rm -rf .venv && mise run sync`, then confirm
   `home` in `.venv/pyvenv.cfg` points into `~/.local/share/mise/installs/python/`.
-- Tasks run from the repository root unless they set `dir` (the generate and fetch-spec
-  tasks run inside the api-client package directory).
+- Tasks run from the repository root unless they set `dir` (the generate, fetch-spec and
+  playground tasks run inside their package directory).
 - `... is not in the lockfile` (CI or `MISE_LOCKED=1`): run `mise lock` and commit the result.
 - `mise doctor` reports activation and config problems.

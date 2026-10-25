@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ example.title }}{% endblock %}
+{% block content %}
+<h1>{{ example.title }}</h1>
+<p class="muted">
+  {{ example.description }}
+  {% if token %}<br>As <a href="{{ url_for('token_page', token_id=token.id) }}">{{ token.display_name }}</a>.{% endif %}
+</p>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% else %}
+<p>HTTP <strong>{{ status }}</strong></p>
+<pre>{{ body }}</pre>
+{% endif %}
+<a class="button secondary" href="{{ url_for('token_page', token_id=token.id) if token else url_for('index') }}">Back</a>
+{% endblock %}

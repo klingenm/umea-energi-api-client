@@ -26,7 +26,7 @@ Use `AuthenticatedClient(base_url=..., token=...)` for endpoints that need a bea
 ## Development
 
 This package lives in the [umea-energi-api-client](https://github.com/klingenm/umea-energi-api-client)
-repository. See the repository README for how to build and test it.
+repository, together with a local playground app. See the repository README for how to build and test it.
 
 ## License
 

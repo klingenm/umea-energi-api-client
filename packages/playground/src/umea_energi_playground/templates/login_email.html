@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Email login{% endblock %}
+{% block content %}
+<h1>Log in with email</h1>
+<div class="card">
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  {% if step == "code" %}
+  <p>If the credentials were accepted, a one-time code has been emailed to <strong>{{ username }}</strong>.</p>
+  <form method="post" action="{{ url_for('email_verify') }}">
+    <input type="hidden" name="username" value="{{ username }}">
+    <input type="hidden" name="state" value="{{ state }}">
+    <label><span>Code from the email</span>
+      <input name="code" autocomplete="one-time-code" inputmode="numeric" required autofocus>
+    </label>
+    <button type="submit">Log in</button>
+  </form>
+  {% else %}
+  <form method="post" action="{{ url_for('email_start') }}">
+    <label><span>Email</span>
+      <input name="username" type="email" autocomplete="username" value="{{ username or '' }}" required autofocus>
+    </label>
+    <label><span>Password</span>
+      <input name="password" type="password" autocomplete="current-password" required>
+    </label>
+    {% include "_login_state.html" %}
+    <button type="submit">Continue</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -64,6 +64,24 @@ openapi-python-client generate \
   --overwrite
 """
 
+[tasks.playground]
+description = "Run the playground on http://127.0.0.1:8000 (applies migrations on startup)"
+depends = ["generate"]
+dir = "packages/playground"
+run = "uv run --package umea-energi-playground uvicorn umea_energi_playground.app:create_app --factory --reload --host 127.0.0.1 --port 8000"
+
+[tasks."playground:migrate"]
+description = "Apply playground database migrations"
+depends = ["generate"]
+dir = "packages/playground"
+run = "uv run --package umea-energi-playground alembic -c pyproject.toml upgrade head"
+
+[tasks."playground:revision"]
+description = "Autogenerate a playground migration from model changes, e.g. -- -m \"add column\""
+depends = ["playground:migrate"]
+dir = "packages/playground"
+run = "uv run --package umea-energi-playground alembic -c pyproject.toml revision --autogenerate"
+
 [tasks.change]
 description = "Add a change file (.changeset/) describing a user-facing change"
 run = "knope document-change"

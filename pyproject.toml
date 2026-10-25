@@ -20,10 +20,14 @@ select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
 
 [tool.ruff.lint.isort]
 # Keeps import order stable whether or not generated/ exists yet.
-known-first-party = ["umea_energi_api_client"]
+known-first-party = ["umea_energi_api_client", "umea_energi_playground"]
 
 [tool.ty.src]
 include = ["packages/*/src", "packages/*/tests", "packages/*/scripts"]
+
+[tool.ty.environment]
+# Test helpers imported by name from the tests (see [tool.pytest] pythonpath).
+extra-paths = ["packages/playground/tests"]
 
 [tool.ty.terminal]
 error-on-warning = true
@@ -31,3 +35,4 @@ error-on-warning = true
 [tool.pytest]
 testpaths = ["packages/*/tests"]
 addopts = ["--import-mode=importlib"]
+pythonpath = ["packages/playground/tests"]

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Log in</h1>
+<div class="card">
+  <form method="post" action="{{ url_for('bankid_start') }}">
+    {% include "_login_state.html" %}
+    <div class="row">
+      <button type="submit">Log in with BankID</button>
+      <a class="button secondary" href="{{ url_for('email_login') }}">Log in with email</a>
+    </div>
+  </form>
+</div>
+
+<h2>Stored tokens</h2>
+{% for token in tokens %}
+<div class="card row">
+  <div class="grow">
+    <a href="{{ url_for('token_page', token_id=token.id) }}"><strong>{{ token.display_name }}</strong></a>
+    <span class="badge">{{ token.method.value }}</span>
+    {% if token.is_expired() %}<span class="badge expired">expired</span>{% endif %}
+    <div class="muted">
+      Customer {{ token.customer_code or "—" }} ·
+      {% if token.expires_at %}expires {{ token.expires_at.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}expiry unknown{% endif %}
+    </div>
+  </div>
+  <form method="post" action="{{ url_for('delete_token', token_id=token.id) }}">
+    <button class="danger" type="submit">Delete</button>
+  </form>
+</div>
+{% else %}
+<p class="muted">No tokens yet. Log in to store one.</p>
+{% endfor %}
+
+<h2>Public endpoints</h2>
+<p class="muted">These work without logging in.</p>
+{% for example in examples %}
+<div class="card row">
+  <div class="grow"><strong>{{ example.title }}</strong><div class="muted">{{ example.description }}</div></div>
+  <a class="button secondary" href="{{ url_for('run_example', slug=example.slug) }}">Run</a>
+</div>
+{% endfor %}
+{% endblock %}

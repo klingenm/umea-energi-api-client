@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}BankID{% endblock %}
+{% block content %}
+<h1>Log in with BankID</h1>
+<div class="card" id="bankid"
+     data-status-url="{{ url_for('bankid_status', reference=reference).include_query_params(state=state) }}">
+  <p id="message">Contacting BankID…</p>
+  <img id="qr" class="qr" alt="BankID QR code" hidden>
+  <div class="row" style="margin-top: 1rem">
+    <a id="autostart" class="button" hidden>Open BankID on this device</a>
+    <form method="post" action="{{ url_for('bankid_cancel', reference=reference) }}">
+      <input type="hidden" name="state" value="{{ state }}">
+      <button class="secondary" type="submit">Cancel</button>
+    </form>
+  </div>
+</div>
+<script>
+  const box = document.getElementById("bankid");
+  const message = document.getElementById("message");
+  const qr = document.getElementById("qr");
+  const autostart = document.getElementById("autostart");
+
+  async function poll() {
+    let data;
+    try {
+      const response = await fetch(box.dataset.statusUrl, { headers: { Accept: "application/json" } });
+      data = await response.json();
+    } catch (error) {
+      data = { status: "failed", error: String(error) };
+    }
+    if (data.status === "complete") {
+      message.textContent = "Logged in. Redirecting…";
+      window.location.assign(data.redirect);
+      return;
+    }
+    if (data.status === "failed") {
+      message.textContent = `Login failed: ${data.error}`;
+      message.className = "error";
+      qr.hidden = true;
+      autostart.hidden = true;
+      return;
+    }
+    if (data.qr_code) {
+      qr.src = `data:image/svg+xml;base64,${data.qr_code}`;
+      qr.hidden = false;
+    }
+    if (data.auto_start_token) {
+      autostart.href = `bankid:///?autostarttoken=${encodeURIComponent(data.auto_start_token)}&redirect=null`;
+      autostart.hidden = false;
+    }
+    message.textContent = "Scan the QR code with the BankID app, or open BankID on this device.";
+    // BankID's animated QR code changes every second.
+    setTimeout(poll, 1000);
+  }
+
+  poll();
+</script>
+{% endblock %}
