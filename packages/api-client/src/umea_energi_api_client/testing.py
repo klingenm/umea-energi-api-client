@@ -1,10 +1,17 @@
-"""Test double for the Umeå Energi API."""
+"""A stand-in for the Umeå Energi API, for testing code that uses this library.
+
+```python
+fake = FakeApi()
+fake.add("GET", "/api/v1/Disturbance", httpx.Response(200, json=[]))
+client = UmeaEnergiClient("https://api.test", httpx_args={"transport": fake.transport})
+```
+"""
 
 import httpx
 
 
 class FakeApi:
-    """Stands in for the Umeå Energi API. Each route replays its responses; the last one repeats."""
+    """Answers requests by method and path. Each route replays its responses; the last repeats."""
 
     def __init__(self) -> None:
         self.routes: dict[tuple[str, str], list[httpx.Response]] = {}

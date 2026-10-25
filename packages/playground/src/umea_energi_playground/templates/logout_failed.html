@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Logout failed{% endblock %}
+{% block content %}
+<h1>Couldn't log out {{ token.display_name }}</h1>
+<p class="error">{{ error }}</p>
+<p>The token is still stored, and its refresh token may still be valid at Umeå Energi.</p>
+<div class="row">
+  <form method="post" action="{{ url_for('logout', token_id=token.id) }}">
+    <button type="submit">Try again</button>
+  </form>
+  <form method="post" action="{{ url_for('delete_token', token_id=token.id) }}">
+    <button class="danger" type="submit">Forget it locally anyway</button>
+  </form>
+  <a class="button secondary" href="{{ url_for('token_page', token_id=token.id) }}">Back</a>
+</div>
+{% endblock %}

@@ -24,8 +24,8 @@
       {% if token.expires_at %}expires {{ token.expires_at.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}expiry unknown{% endif %}
     </div>
   </div>
-  <form method="post" action="{{ url_for('delete_token', token_id=token.id) }}">
-    <button class="danger" type="submit">Delete</button>
+  <form method="post" action="{{ url_for('logout', token_id=token.id) }}">
+    <button class="danger" type="submit">Log out</button>
   </form>
 </div>
 {% else %}

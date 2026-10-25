@@ -1,8 +1,10 @@
 <label>
-  <span>Login type (<code>LoginManagerState</code>, undocumented; the API's own example uses 0)</span>
+  <span>Customer type</span>
   <select name="state">
     {% for option in login_states %}
-    <option value="{{ option.value }}" {% if option.value == (state or 0) %}selected{% endif %}>{{ option.value }}</option>
+    <option value="{{ option.value }}" {% if option.value == (state or 0) %}selected{% endif %}>
+      {{ "Company" if option.value == 1 else "Private person" }}
+    </option>
     {% endfor %}
   </select>
 </label>

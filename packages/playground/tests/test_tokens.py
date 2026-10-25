@@ -1,16 +1,14 @@
 from collections.abc import Callable
-from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
 from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
-from fake_api import FakeApi
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 
+from umea_energi_api_client.testing import FakeApi
 from umea_energi_playground.db import Base, upgrade_database
-from umea_energi_playground.models import jwt_expiry
 
 
 def login(
@@ -72,14 +70,8 @@ def test_delete_token(
 ) -> None:
     page = login(client, fake_api, make_jwt(1), login_session)
 
-    assert client.post("/tokens/1/delete").status_code == 303
+    assert client.post("/tokens/1/logout").status_code == 303
     assert client.get(page).status_code == 404
-
-
-def test_jwt_expiry() -> None:
-    assert jwt_expiry("e30.eyJleHAiOjB9.sig") == datetime(1970, 1, 1, tzinfo=UTC)
-    assert jwt_expiry("not-a-jwt") is None
-    assert jwt_expiry("e30.e30.sig") is None  # no exp claim
 
 
 def test_migrations_match_models(tmp_path: Path) -> None:

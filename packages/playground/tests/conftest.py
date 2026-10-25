@@ -4,9 +4,9 @@ from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
-from fake_api import FakeApi
 from fastapi.testclient import TestClient
 
+from umea_energi_api_client.testing import FakeApi
 from umea_energi_playground.app import create_app
 from umea_energi_playground.config import Settings
 

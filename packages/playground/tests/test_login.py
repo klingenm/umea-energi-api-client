@@ -2,8 +2,9 @@ import json
 from collections.abc import Callable
 
 import httpx
-from fake_api import FakeApi
 from fastapi.testclient import TestClient
+
+from umea_energi_api_client.testing import FakeApi
 
 BANKID_START = "/api/v2/Session/bankid"
 BANKID_POLL = "/api/v2/Session/bankid/ref123/0"
@@ -126,3 +127,57 @@ def test_email_code_without_token_is_an_error(client: TestClient, fake_api: Fake
 
     assert response.status_code == 400
     assert "did not return an access token" in response.text
+
+
+def test_email_login_explains_unknown_credentials(client: TestClient, fake_api: FakeApi) -> None:
+    fake_api.add("POST", EMAIL_STEP_1, httpx.Response(404))
+
+    response = client.post(
+        "/login/email", data={"username": "ada@example.com", "password": "nope", "state": "0"}
+    )
+
+    assert response.status_code == 400
+    assert "Incorrect email or password (or no such account)." in response.text
+
+
+def production_login_session(token: str) -> dict[str, object]:
+    """Shape of a completed login from the production API (v1), with made-up values."""
+    return {
+        "id": None,
+        "completed": True,
+        "qrCode": "",
+        "token": {"access_token": token},
+        "user": {
+            "id": 99,
+            "pnr": "190001019999",
+            "firstName": "Grace",
+            "lastName": "Hopper",
+            "email": "grace@example.com",
+            "customer": {"code": "777", "persNo": "190001019999", "address": "Street 1"},
+            "refreshToken": {"token": "refresh-secret", "createdByIp": "192.0.2.1"},
+            "defaultCustomerCode": None,
+        },
+        "synchronized": True,
+    }
+
+
+def test_email_login_with_production_response_shape(
+    client: TestClient, fake_api: FakeApi, make_jwt: Callable[[int], str]
+) -> None:
+    token = make_jwt(2_000_000_000)
+    fake_api.add("POST", EMAIL_STEP_1, httpx.Response(200))
+    fake_api.add(
+        "POST",
+        EMAIL_STEP_2,
+        httpx.Response(200, json=production_login_session(token)),
+    )
+
+    client.post("/login/email", data={"username": "grace@example.com", "password": "pw"})
+    response = client.post(
+        "/login/email/verify", data={"username": "grace@example.com", "code": "1"}
+    )
+
+    assert response.status_code == 303
+    page = client.get(response.headers["location"])
+    assert "Grace Hopper" in page.text
+    assert "777" in page.text  # customer.code, since defaultCustomerCode is null

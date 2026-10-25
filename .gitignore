@@ -7,6 +7,7 @@ dist/
 
 # Environments
 *.db
+*.log
 .venv/
 .env
 mise.local.toml

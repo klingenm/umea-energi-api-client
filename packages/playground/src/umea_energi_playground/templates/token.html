@@ -13,8 +13,35 @@
       {% if token.expires_at %}{{ token.expires_at.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}unknown{% endif %}
       {% if token.is_expired() %}<span class="badge expired">expired</span>{% endif %}
     </dd>
+    <dt>Refresh token</dt>
+    <dd>
+      {% if token.can_refresh() %}stored{% if token.refresh_token_expires_at %}, valid until {{ token.refresh_token_expires_at.strftime("%Y-%m-%d") }}{% endif %}
+      {% else %}<span class="badge expired">none</span> log in again when the access token expires{% endif %}
+    </dd>
+    <dt>Last refreshed</dt>
+    <dd>{% if token.refreshed_at %}{{ token.refreshed_at.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}never{% endif %}</dd>
     <dt>Stored</dt><dd>{{ token.created_at.strftime("%Y-%m-%d %H:%M") }} UTC</dd>
   </dl>
+  <div class="row" style="margin-top: 1rem">
+    {% if token.can_refresh() %}
+    <form method="post" action="{{ url_for('refresh_token', token_id=token.id) }}">
+      <button class="secondary" type="submit">Refresh now</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('logout', token_id=token.id) }}">
+      <button class="danger" type="submit" title="Revokes the refresh token at Umeå Energi, then deletes the stored token">Log out</button>
+    </form>
+  </div>
+</div>
+<p class="muted">The access token is refreshed automatically before it expires when you run an example.</p>
+
+<h2>Consumption and meter readings</h2>
+<div class="card row">
+  <div class="grow">
+    <strong>Consumption, costs and meter readings</strong>
+    <div class="muted">Pick one of your meter points and a period.</div>
+  </div>
+  <a class="button secondary" href="{{ url_for('consumption', token_id=token.id) }}">Open</a>
 </div>
 
 <h2>Try the API with this token</h2>
@@ -29,7 +56,4 @@
 </div>
 {% endfor %}
 
-<form method="post" action="{{ url_for('delete_token', token_id=token.id) }}" style="margin-top: 2rem">
-  <button class="danger" type="submit">Delete this token</button>
-</form>
 {% endblock %}

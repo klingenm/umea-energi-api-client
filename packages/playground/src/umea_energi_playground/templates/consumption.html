@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Consumption and meter readings{% endblock %}
+{% block content %}
+<h1>Consumption and meter readings</h1>
+<p class="muted">As <a href="{{ url_for('token_page', token_id=token.id) }}">{{ token.display_name }}</a>, customer {{ token.customer_code or "—" }}.</p>
+
+<form class="card" method="get" action="{{ url_for('consumption', token_id=token.id) }}">
+  <label><span>Meter point</span>
+    <select name="meter_point" required>
+      {% for point in meter_points %}
+      {% set key = point.contract_type ~ ":" ~ point.meter_point_no %}
+      <option value="{{ key }}" {% if key == selected %}selected{% endif %}>
+        {{ point.contract_type }} · {{ point.meter_point_no }}{% if point.address %} · {{ point.address }}{% endif %}
+      </option>
+      {% else %}
+      <option value="" disabled selected>No meter points found</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label><span>Show</span>
+    <select name="kind">
+      {% for value, option in kinds.items() %}
+      <option value="{{ value }}" {% if value == kind %}selected{% endif %}>{{ option.label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label><span>Variables (meter statistics only), e.g. FVTQW, FVT, FKAET for district heating, MVT for electricity</span>
+    <input name="variables" value="{{ variables }}" placeholder="FVTQW">
+  </label>
+  <div class="row">
+    <label><span>From</span><input type="date" name="start" value="{{ start.isoformat() }}"></label>
+    <label><span>To</span><input type="date" name="end" value="{{ end.isoformat() }}"></label>
+    <label><span>Resolution (consumption, cost, estimated statistics)</span>
+      <select name="resolution">
+        {% for option in resolutions %}
+        <option value="{{ option.value }}" {% if option == resolution %}selected{% endif %}>{{ option.value.title() }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <button type="submit">Show</button>
+</form>
+
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+{% if empty %}
+<p class="muted">
+  The API returned no data for this meter point and period.
+  {% if kind == "max" %}Umeå Energi only provides max effect readings for company customers'
+  district heating; Mina sidor shows them only to companies.{% endif %}
+</p>
+{% endif %}
+
+{% if rows %}
+<h2>{{ kinds[kind].label if kind in kinds else "Result" }}</h2>
+<div class="card">
+  {% for row in rows %}
+  <div class="row" style="flex-wrap: nowrap; font-size: .875rem">
+    <span style="width: 9rem; flex: none" class="muted">{{ row.period }}</span>
+    <span class="grow" style="background: var(--border); border-radius: 2px; height: .75rem">
+      <span style="display: block; height: 100%; width: {{ (row.share * 100)|round(1) }}%; background: var(--accent); border-radius: 2px"></span>
+    </span>
+    <span style="width: 6rem; flex: none; text-align: right">{{ "%.2f"|format(row.value) }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if body %}
+<h2>Response</h2>
+<pre>{{ body }}</pre>
+{% endif %}
+{% endblock %}

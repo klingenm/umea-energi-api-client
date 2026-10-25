@@ -1,12 +1,12 @@
 """Database models. After changing them, run `mise run playground:revision -- -m "..."`."""
 
-import base64
-import json
 from datetime import UTC, datetime
 from enum import StrEnum
 
 from sqlalchemy import Enum, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
+
+from umea_energi_api_client import Credentials
 
 from .db import Base
 
@@ -36,17 +36,28 @@ class AuthToken(Base):
     customer_code: Mapped[str | None] = mapped_column(String(64))
     access_token: Mapped[str] = mapped_column(Text)
     expires_at: Mapped[datetime | None]
+    refresh_token: Mapped[str | None] = mapped_column(Text)
+    refresh_token_expires_at: Mapped[datetime | None]
+    refreshed_at: Mapped[datetime | None]
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
 
-    def is_expired(self, now: datetime | None = None) -> bool:
-        return self.expires_at is not None and self.expires_at <= (now or datetime.now(UTC))
+    @property
+    def credentials(self) -> Credentials:
+        return Credentials(
+            access_token=self.access_token,
+            refresh_token=self.refresh_token,
+            refresh_token_expires_at=self.refresh_token_expires_at,
+        )
 
+    def apply(self, credentials: Credentials) -> None:
+        """Store new tokens from a login or refresh."""
+        self.access_token = credentials.access_token
+        self.expires_at = credentials.access_token_expires_at
+        self.refresh_token = credentials.refresh_token
+        self.refresh_token_expires_at = credentials.refresh_token_expires_at
 
-def jwt_expiry(token: str) -> datetime | None:
-    """Read the `exp` claim of a JWT without verifying it (the API is the one that verifies)."""
-    try:
-        payload = token.split(".")[1]
-        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
-        return datetime.fromtimestamp(claims["exp"], UTC)
-    except IndexError, KeyError, TypeError, ValueError:
-        return None
+    def is_expired(self) -> bool:
+        return self.credentials.is_expired()
+
+    def can_refresh(self) -> bool:
+        return self.credentials.can_refresh()
