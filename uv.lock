@@ -6,6 +6,14 @@ resolution-markers = [
     "python_full_version < '3.15'",
 ]
 
+[manifest]
+members = [
+    "umea-energi-api-client",
+]
+
+[manifest.dependency-groups]
+dev = [{ name = "pytest", specifier = ">=9.1.1" }]
+
 [[package]]
 name = "anyio"
 version = "4.15.1"
@@ -156,15 +164,10 @@ wheels = [
 [[package]]
 name = "umea-energi-api-client"
 version = "0.1.0"
-source = { editable = "." }
+source = { editable = "packages/api-client" }
 dependencies = [
     { name = "attrs" },
     { name = "httpx" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -172,6 +175,3 @@ requires-dist = [
     { name = "attrs", specifier = ">=26.1.0" },
     { name = "httpx", specifier = ">=0.28.1" },
 ]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.1.1" }]

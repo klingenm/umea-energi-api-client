@@ -30,7 +30,7 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          version="$(uv version --short)"
+          version="$(uv version --short --package umea-energi-api-client)"
           if [ "${TAG#v}" != "$version" ]; then
             echo "::error::Release tag '$TAG' does not match project version '$version'"
             exit 1

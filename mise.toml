@@ -19,8 +19,8 @@ UV_PREVIEW_FEATURES = "check-command"
 python.uv_venv_auto = true
 
 [tasks.sync]
-description = "Install the project and dev dependencies into .venv"
-run = "uv sync --all-groups"
+description = "Install all workspace packages and dev dependencies into .venv"
+run = "uv sync --all-packages --all-groups"
 
 [tasks.format]
 description = "Format code and apply safe lint fixes"
@@ -33,23 +33,25 @@ run = ["ruff format --check", "ruff check"]
 [tasks.typecheck]
 depends = ["generate"]
 description = "Type-check with ty (via uv check)"
-run = "uv check --ty-version 0.0.91"
+run = "uv check --all-packages --ty-version 0.0.91"
 
 [tasks.test]
 depends = ["generate"]
 description = "Run the test suite"
-run = "uv run pytest"
+run = "uv run --all-packages pytest"
 
 [tasks.check]
 description = "Run lint, typecheck and tests"
 depends = ["lint", "typecheck", "test"]
 
 [tasks.fetch-spec]
-description = "Download the latest OpenAPI document to openapi/swagger.json"
+description = "Download the latest OpenAPI document into the api-client package"
+dir = "packages/api-client"
 run = "curl -fsSL https://tapi.umeaenergi.se/swagger/v2/swagger.json -o openapi/swagger.json"
 
 [tasks.generate]
-description = "Regenerate the API client from openapi/swagger.json"
+description = "Regenerate the API client from packages/api-client/openapi/swagger.json"
+dir = "packages/api-client"
 sources = ["openapi/swagger.json", "openapi/config.yaml", "scripts/normalize_openapi.py"]
 outputs = ["src/umea_energi_api_client/generated/__init__.py"]
 run = """
@@ -78,5 +80,5 @@ GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}" knope release
 
 [tasks.build]
 depends = ["generate"]
-description = "Build sdist and wheel into dist/"
-run = "uv build"
+description = "Build the api-client sdist and wheel into dist/"
+run = "uv build --package umea-energi-api-client"

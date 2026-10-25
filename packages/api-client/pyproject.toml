@@ -1,0 +1,34 @@
+[project]
+name = "umea-energi-api-client"
+version = "0.1.0"
+description = "Unofficial async Python client for the Umeå Energi API"
+readme = "README.md"
+authors = [
+    { name = "Magnus Klingenberg", email = "klingenberg.magnus@gmail.com" }
+]
+requires-python = ">=3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = [
+    "attrs>=26.1.0",
+    "httpx>=0.28.1",
+]
+
+[project.urls]
+"API Documentation" = "https://tapi.umeaenergi.se/"
+Repository = "https://github.com/klingenm/umea-energi-api-client"
+Issues = "https://github.com/klingenm/umea-energi-api-client/issues"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"

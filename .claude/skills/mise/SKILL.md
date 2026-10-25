@@ -12,8 +12,8 @@ Configuration lives in `mise.toml` at the repository root.
 
 - Never install tools with `brew`, `pipx`, `pip install --user`, `uv tool install`, or curl scripts.
   Add them to `mise.toml` with `mise use` instead.
-- Python *libraries* (runtime and dev dependencies) belong in `pyproject.toml` via `uv add` /
-  `uv add --dev`, not in mise. Standalone CLIs (ruff, uv itself, gh, …) belong in mise.
+- Python *libraries* (runtime and dev dependencies) belong in the workspace packages' `pyproject.toml`
+  via `uv add --package <name>` / `uv add --dev`, not in mise. Standalone CLIs (ruff, uv itself, gh, …) belong in mise.
 - uv is configured (via `[env]` in `mise.toml`) to use the mise-managed Python and never
   download its own. Don't override `UV_PYTHON*` variables or add a `.python-version` file.
 - Prefer `mise run <task>` over retyping the underlying commands, so local runs match CI.
@@ -31,11 +31,11 @@ mise tasks                # list tasks with descriptions
 mise run format           # ruff format + ruff check --fix
 mise run lint             # ruff format --check + ruff check
 mise run typecheck        # ty, via uv check
-mise run test             # pytest
+mise run test             # pytest (all workspace packages)
 mise run test -- -k name  # pass extra args through to the task
 mise run check            # lint + typecheck + test (run before committing)
-mise run sync             # uv sync --all-groups
-mise run build            # uv build
+mise run sync             # uv sync --all-packages --all-groups
+mise run build            # uv build --package umea-energi-api-client
 mise run fetch-spec       # download the latest OpenAPI document
 mise run generate         # regenerate the API client (mise run --force generate to bypass the up-to-date check)
 mise run change           # add a knope change file to .changeset/
@@ -72,5 +72,7 @@ patch version. Use `mise lock --bump` to take newer patch releases without editi
   shell isn't activated, prefix the command with `mise exec --`.
 - `.venv` built against the wrong interpreter: `rm -rf .venv && mise run sync`, then confirm
   `home` in `.venv/pyvenv.cfg` points into `~/.local/share/mise/installs/python/`.
+- Tasks run from the repository root unless they set `dir` (the generate and fetch-spec
+  tasks run inside the api-client package directory).
 - `... is not in the lockfile` (CI or `MISE_LOCKED=1`): run `mise lock` and commit the result.
 - `mise doctor` reports activation and config problems.

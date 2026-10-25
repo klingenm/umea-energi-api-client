@@ -25,4 +25,4 @@ htmlcov/
 .claude/settings.local.json
 
 # Generated API client (mise run generate)
-src/umea_energi_api_client/generated/
+packages/api-client/src/umea_energi_api_client/generated/

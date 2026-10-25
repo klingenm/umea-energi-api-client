@@ -5,9 +5,10 @@
 # Only change files in .changeset/ drive versions and the changelog, not commit messages.
 ignore_conventional_commits = true
 
+# The published api-client package.
 [package]
-versioned_files = ["pyproject.toml"]
-changelog = "CHANGELOG.md"
+versioned_files = ["packages/api-client/pyproject.toml"]
+changelog = "packages/api-client/CHANGELOG.md"
 
 [[workflows]]
 name = "release"
