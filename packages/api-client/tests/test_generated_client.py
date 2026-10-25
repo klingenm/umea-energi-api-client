@@ -6,6 +6,8 @@ import httpx
 from umea_energi_api_client import Client
 from umea_energi_api_client.generated.api.temperature import get_api_vversion_temperature
 from umea_energi_api_client.generated.models import (
+    UmeaEnergiApiModelsLoginAccessToken,
+    UmeaEnergiApiModelsLoginLoginSession,
     UmeaEnergiApiModelsTemperatureResponse,
     UmeaEnergiApiMuleResponseTypesElectricityPricesAreaResponse,
 )
@@ -39,3 +41,11 @@ def test_null_reference_property_is_accepted() -> None:
 
     assert parsed.error is None
     assert parsed.net_area == 2
+
+
+def test_login_session_reads_production_access_token() -> None:
+    # The document only lists accessJwtToken; scripts/normalize_openapi.py adds access_token.
+    session = UmeaEnergiApiModelsLoginLoginSession.from_dict({"token": {"access_token": "jwt"}})
+
+    assert isinstance(session.token, UmeaEnergiApiModelsLoginAccessToken)
+    assert session.token.access_token == "jwt"
